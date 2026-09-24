@@ -5,7 +5,7 @@ const DEFAULT_AD_SLOT = '8234765509'
 
 export default function AdSlot({
   id = DEFAULT_AD_SLOT,
-  label = 'Advertisement'
+  label = 'Advertisements'
 }) {
   useEffect(() => {
     try {
