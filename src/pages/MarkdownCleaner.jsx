@@ -14,9 +14,11 @@ export default function MarkdownCleaner() {
 
   return (
     <ToolLayout
-      badge="Fixer"
+      badge="Markdown Fixer"
       title="Markdown Table Cleaner & Formatter"
-      description="Fix broken markdown tables: missing pipes, inconsistent columns, missing separator rows and extra spaces."
+      description="Fix broken Markdown tables with missing pipes, inconsistent columns, separator rows and extra spaces."
+      seoTitle="Markdown Table Cleaner & Formatter — Free Online Tool"
+      seoDescription="Clean and repair broken Markdown tables online. Fix missing pipes, inconsistent columns, separator rows and spacing directly in your browser."
     >
       <Converter
         inputLabel="Broken markdown"

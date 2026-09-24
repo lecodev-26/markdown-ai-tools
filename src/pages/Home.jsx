@@ -1,57 +1,163 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import AdSlot from '../components/AdSlot.jsx'
+import SEO from '../components/SEO.jsx'
 
 const tools = [
-  {slug:'/text-to-table', name:'Text to Markdown Table', desc:'Paste messy notes, emails, or AI output. We detect structure and turn it into a perfect table.', tag:'Most Popular'},
-  {slug:'/csv-to-table', name:'CSV to Markdown Table', desc:'Handles commas, semicolons, tabs and pipes. Auto-detects delimiter + handles quotes.', tag:'CSV'},
-  {slug:'/list-to-table', name:'List to Markdown Table', desc:'Turn bullet lists or one-per-line items into a clean 2-column table.', tag:'Lists'},
-  {slug:'/table-to-csv', name:'Markdown Table to CSV', desc:'Reverse conversion. Perfect for moving Notion/GitHub tables to Excel/Sheets.', tag:'Reverse'},
-  {slug:'/cleaner', name:'Markdown Table Cleaner', desc:'Fix broken pipes, missing separators, inconsistent columns. One click.', tag:'Cleaner'},
+  {
+    slug: '/text-to-table',
+    name: 'Text to Markdown Table',
+    desc: 'Turn messy notes, emails, AI output and structured text into clean Markdown tables.',
+    tag: 'Most Popular'
+  },
+  {
+    slug: '/csv-to-table',
+    name: 'CSV to Markdown Table',
+    desc: 'Convert CSV using commas, semicolons, tabs or pipes, including quoted fields.',
+    tag: 'CSV'
+  },
+  {
+    slug: '/list-to-table',
+    name: 'List to Markdown Table',
+    desc: 'Turn bullet lists, numbered lists and one-item-per-line data into a Markdown table.',
+    tag: 'Lists'
+  },
+  {
+    slug: '/table-to-csv',
+    name: 'Markdown Table to CSV',
+    desc: 'Convert Markdown tables into CSV for Excel, Google Sheets and other spreadsheet tools.',
+    tag: 'Reverse'
+  },
+  {
+    slug: '/cleaner',
+    name: 'Markdown Table Cleaner',
+    desc: 'Repair broken Markdown tables with inconsistent columns, spacing and separator rows.',
+    tag: 'Cleaner'
+  }
 ]
 
-export default function Home(){
+export default function Home() {
   return (
     <div className="container">
-      <section style={{padding:'40px 0 24px', maxWidth:780}}>
-        <span className="badge">New • 100% Free • No Signup • Privacy-First</span>
-        <h1 className="h1" style={{margin:'20px 0 16px'}}>Turn any messy text into a perfect markdown table in seconds.</h1>
-        <p style={{fontSize:20, lineHeight:1.5, color:'var(--ink-soft)'}}>
-          Built for AI workflows, Notion, Obsidian and GitHub. No data stored. Works 100% in your browser. Built for AdSense approval.
+      <SEO
+        title="Markdown AI Tools — Free Markdown Table Converters"
+        description="Convert text, CSV, lists and Markdown tables with fast browser-based tools. Create clean Markdown tables for AI, GitHub, Notion and documentation. No signup."
+      />
+
+      <section style={{ padding: '40px 0 24px', maxWidth: 780 }}>
+        <span className="badge">Free • No Signup • Privacy-First</span>
+
+        <h1 className="h1" style={{ margin: '20px 0 16px' }}>
+          Convert text and data into clean Markdown tables.
+        </h1>
+
+        <p style={{ fontSize: 20, lineHeight: 1.5, color: 'var(--ink-soft)' }}>
+          Simple browser-based tools for converting text, CSV, lists and Markdown
+          tables for AI workflows, GitHub, Notion, documentation and spreadsheets.
         </p>
-        <div style={{display:'flex', gap:12, marginTop:24}}>
-          <Link to="/text-to-table" className="btn">Start Converting →</Link>
-          <Link to="/csv-to-table" className="btn btn-ghost">See CSV Tool</Link>
+
+        <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
+          <Link to="/text-to-table" className="btn">
+            Start Converting →
+          </Link>
+
+          <Link to="/csv-to-table" className="btn btn-ghost">
+            Convert CSV
+          </Link>
         </div>
       </section>
 
       <AdSlot />
 
-      <section style={{marginTop:32}}>
-        <h2 className="h2" style={{marginBottom:16}}>All Tools</h2>
+      <section style={{ marginTop: 32 }}>
+        <h2 className="h2" style={{ marginBottom: 16 }}>
+          Markdown Table Tools
+        </h2>
+
         <div className="grid grid-3">
-          {tools.map(t=>(
-            <Link key={t.slug} to={t.slug} className="card" style={{padding:20, display:'flex', flexDirection:'column', gap:10, transition:'transform .15s'}}>
-              <span className="badge" style={{alignSelf:'flex-start'}}>{t.tag}</span>
-              <div style={{fontWeight:700, fontSize:18, fontFamily:'var(--font-display)'}}>{t.name}</div>
-              <div className="small muted" style={{lineHeight:1.5}}>{t.desc}</div>
-              <div className="small mono" style={{marginTop:'auto', paddingTop:12, fontWeight:600}}>Open →</div>
+          {tools.map(tool => (
+            <Link
+              key={tool.slug}
+              to={tool.slug}
+              className="card"
+              style={{
+                padding: 20,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+                transition: 'transform .15s'
+              }}
+            >
+              <span className="badge" style={{ alignSelf: 'flex-start' }}>
+                {tool.tag}
+              </span>
+
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 18,
+                  fontFamily: 'var(--font-display)'
+                }}
+              >
+                {tool.name}
+              </div>
+
+              <div
+                className="small muted"
+                style={{ lineHeight: 1.5 }}
+              >
+                {tool.desc}
+              </div>
+
+              <div
+                className="small mono"
+                style={{
+                  marginTop: 'auto',
+                  paddingTop: 12,
+                  fontWeight: 600
+                }}
+              >
+                Open tool →
+              </div>
             </Link>
           ))}
         </div>
       </section>
 
-      <section style={{marginTop:56, maxWidth:720}} className="card">
-        <div style={{padding:24}}>
-          <h3 className="h2" style={{fontSize:24}}>Why this site?</h3>
-          <p className="muted" style={{marginTop:12, lineHeight:1.6}}>
-            ChatGPT and Claude often return tables with broken markdown. Copy-pasting from Excel creates messy pipes. This tool was built to fix that instantly, with privacy-first processing (nothing leaves your browser) and original content to pass AdSense policies easily.
+      <section
+        style={{ marginTop: 56, maxWidth: 720 }}
+        className="card"
+      >
+        <div style={{ padding: 24 }}>
+          <h2 className="h2" style={{ fontSize: 24 }}>
+            Why use Markdown AI Tools?
+          </h2>
+
+          <p
+            className="muted"
+            style={{ marginTop: 12, lineHeight: 1.6 }}
+          >
+            Markdown tables are useful for AI prompts, GitHub README files,
+            technical documentation and note-taking apps. These tools help turn
+            messy source data into consistent Markdown without requiring an
+            account or uploading the content to a server.
           </p>
-          <ul className="small mono" style={{marginTop:16, display:'grid', gap:8, paddingLeft:18, listStyle:'disc'}}>
-            <li>No backend – all conversion runs client-side</li>
-            <li>~2000 words of original guides per tool page (for AdSense)</li>
-            <li>Ad slots ready, Privacy + Terms + Cookie consent included</li>
-            <li>Fast Vite build, SEO meta tags, sitemap.xml</li>
+
+          <ul
+            className="small mono"
+            style={{
+              marginTop: 16,
+              display: 'grid',
+              gap: 8,
+              paddingLeft: 18,
+              listStyle: 'disc'
+            }}
+          >
+            <li>Conversions run directly in your browser</li>
+            <li>Supports text, CSV, lists and Markdown tables</li>
+            <li>Copy or download converted results</li>
+            <li>No account required</li>
+            <li>Designed for AI, GitHub, Notion and documentation workflows</li>
           </ul>
         </div>
       </section>

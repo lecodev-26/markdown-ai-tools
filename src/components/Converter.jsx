@@ -23,13 +23,28 @@ export default function Converter({
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const hasInput = Boolean(input.trim())
+
+    if (!hasInput) {
+      setOutput('')
+      setError('')
+      setCopied(false)
+      return
+    }
+
     try {
       setError('')
+
       const result = convertFn(input)
+
       setOutput(String(result ?? ''))
     } catch (err) {
       setOutput('')
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Something went wrong.'
+      )
     }
   }, [input, convertFn])
 
@@ -44,13 +59,18 @@ export default function Converter({
         await navigator.clipboard.writeText(output)
       } else {
         const textarea = document.createElement('textarea')
+
         textarea.value = output
         textarea.style.position = 'fixed'
         textarea.style.opacity = '0'
+
         document.body.appendChild(textarea)
+
         textarea.focus()
         textarea.select()
+
         document.execCommand('copy')
+
         textarea.remove()
       }
 
@@ -67,19 +87,28 @@ export default function Converter({
   const download = () => {
     if (!output) return
 
-    const extension = String(downloadExt || 'md').replace(/^\./, '')
+    const extension = String(downloadExt || 'md')
+      .replace(/^\./, '')
+
     const mimeType =
       extension === 'csv'
         ? 'text/csv;charset=utf-8'
         : 'text/markdown;charset=utf-8'
 
-    const blob = new Blob([output], { type: mimeType })
+    const blob = new Blob(
+      [output],
+      { type: mimeType }
+    )
+
     const url = URL.createObjectURL(blob)
+
     const anchor = document.createElement('a')
 
     anchor.href = url
     anchor.download = `markdown-ai-tools.${extension}`
+
     document.body.appendChild(anchor)
+
     anchor.click()
     anchor.remove()
 
@@ -88,13 +117,17 @@ export default function Converter({
 
   const clear = () => {
     setInput('')
+    setOutput('')
     setCopied(false)
     setError('')
   }
 
   return (
     <div className="converter-grid">
-      <section className="card converter-card" aria-labelledby="converter-input-label">
+      <section
+        className="card converter-card"
+        aria-labelledby="converter-input-label"
+      >
         <div className="converter-header">
           <span
             id="converter-input-label"
@@ -131,7 +164,10 @@ export default function Converter({
         </div>
       </section>
 
-      <section className="card converter-card" aria-labelledby="converter-output-label">
+      <section
+        className="card converter-card"
+        aria-labelledby="converter-output-label"
+      >
         <div className="converter-header">
           <span
             id="converter-output-label"
@@ -165,7 +201,10 @@ export default function Converter({
         </div>
 
         {error ? (
-          <div className="converter-error" role="alert">
+          <div
+            className="converter-error"
+            role="alert"
+          >
             <strong>Conversion error</strong>
             <span>{error}</span>
           </div>

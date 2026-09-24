@@ -18,7 +18,9 @@ export default function TextToTable() {
     <ToolLayout
       badge="Text → Markdown"
       title="Text to Markdown Table Converter"
-      description="Turn messy notes, lists, key-value data and simple structured text into a clean Markdown table."
+      description="Turn messy notes, lists, key-value data and structured text into a clean Markdown table."
+      seoTitle="Text to Markdown Table Converter — Free Online Tool"
+      seoDescription="Convert plain text, notes, key-value data and structured text into clean Markdown tables directly in your browser. Free, fast and no signup."
     >
       <Converter
         inputLabel="Messy text"

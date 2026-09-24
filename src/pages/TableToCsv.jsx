@@ -17,7 +17,9 @@ export default function TableToCsv() {
     <ToolLayout
       badge="Markdown → CSV"
       title="Markdown Table to CSV Converter"
-      description="Paste a markdown table from GitHub, Notion or ChatGPT and get clean CSV for Excel & Google Sheets."
+      description="Convert Markdown tables from GitHub, Notion, ChatGPT and documentation into CSV for spreadsheets."
+      seoTitle="Markdown Table to CSV Converter — Free Online Tool"
+      seoDescription="Convert Markdown tables to CSV for Excel, Google Sheets and other spreadsheet apps. Handles escaped pipes and inconsistent Markdown tables."
     >
       <Converter
         inputLabel="Markdown table"
