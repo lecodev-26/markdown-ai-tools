@@ -109,3 +109,7 @@ export function markdownToCsv(md){
     return v
   }).join(',')).join('\n')
     }
+
+export const parseCSV = csvToRows
+export const markdownTableToCSV = markdownToCsv
+export const cleanTable = cleanMarkdownTable
