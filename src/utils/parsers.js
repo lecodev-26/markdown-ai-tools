@@ -1,114 +1,428 @@
-export function detectDelimiter(text){
-  const firstLine = text.trim().split('\n')[0] || ''
-  const counts = {',': (firstLine.match(/,/g)||[]).length, ';': (firstLine.match(/;/g)||[]).length, '\t': (firstLine.match(/\t/g)||[]).length, '|': (firstLine.match(/\|/g)||[]).length}
-  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1])
-  return sorted[0][1]===0? ',' : sorted[0][0]
-}
+export function detectDelimiter(text) {
+  const source = String(text || '').replace(/^\uFEFF/, '')
+  const candidates = [',', ';', '\t', '|']
 
-export function csvToRows(text, delimiter){
-  const d = delimiter || detectDelimiter(text)
-  return text.trim().split('\n').filter(Boolean).map(line=>{
-    const result=[]
-    let cur='', inQ=false
-    for(let i=0;i<line.length;i++){
-      const c=line[i]
-      if(c==='"'){ inQ=!inQ; continue }
-      if(c===d &&!inQ){ result.push(cur.trim()); cur=''; continue }
-      cur+=c
+  let bestDelimiter = ','
+  let bestCount = 0
+
+  // Analizamos varios caracteres, ignorando delimitadores dentro de comillas.
+  let inQuotes = false
+  const counts = Object.fromEntries(candidates.map(delimiter => [delimiter, 0]))
+
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i]
+
+    if (char === '"') {
+      if (inQuotes && source[i + 1] === '"') {
+        i += 1
+      } else {
+        inQuotes = !inQuotes
+      }
+      continue
     }
-    result.push(cur.trim())
-    return result
-  })
+
+    if (!inQuotes && candidates.includes(char)) {
+      counts[char] += 1
+    }
+
+    // No necesitamos recorrer un archivo enorme entero para detectar
+    // el delimitador. Con los primeros 10.000 caracteres es suficiente.
+    if (i >= 10000) break
+  }
+
+  for (const delimiter of candidates) {
+    if (counts[delimiter] > bestCount) {
+      bestDelimiter = delimiter
+      bestCount = counts[delimiter]
+    }
+  }
+
+  return bestDelimiter
 }
 
-export function rowsToMarkdown(rows, align='left'){
-  if(!rows.length) return ''
-  const colCount = Math.max(...rows.map(r=>r.length))
-  const norm = rows.map(r=>{
-    const copy=[...r]
-    while(copy.length<colCount) copy.push('')
-    return copy
-  })
-  const esc = s => String(s||'').replace(/\|/g,'\\|').trim()
-  const alignMap = {left:':--', center:':--:', right:'--:'}
-  const sep = Array(colCount).fill(alignMap[align]||':--')
-  const lines=[]
-  lines.push('| '+norm[0].map(esc).join(' | ')+' |')
-  lines.push('| '+sep.join(' | ')+' |')
-  for(let i=1;i<norm.length;i++){
-    lines.push('| '+norm[i].map(esc).join(' | ')+' |')
+export function csvToRows(text, delimiter) {
+  const source = String(text ?? '').replace(/^\uFEFF/, '')
+
+  if (!source.trim()) return []
+
+  const d = delimiter || detectDelimiter(source)
+
+  const rows = []
+  let row = []
+  let cell = ''
+  let inQuotes = false
+
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i]
+
+    // Dentro de una celda entre comillas.
+    if (inQuotes) {
+      if (char === '"') {
+        // CSV escaped quote: ""
+        if (source[i + 1] === '"') {
+          cell += '"'
+          i += 1
+        } else {
+          inQuotes = false
+        }
+      } else {
+        // Esto permite saltos de línea dentro de una celda.
+        cell += char
+      }
+
+      continue
+    }
+
+    // Inicio de una celda entre comillas.
+    if (char === '"' && cell.trim() === '') {
+      inQuotes = true
+      continue
+    }
+
+    // Delimitador.
+    if (char === d) {
+      row.push(cell.trim())
+      cell = ''
+      continue
+    }
+
+    // Fin de línea.
+    if (char === '\n' || char === '\r') {
+      if (char === '\r' && source[i + 1] === '\n') {
+        i += 1
+      }
+
+      row.push(cell.trim())
+      cell = ''
+
+      // Ignoramos líneas completamente vacías.
+      if (row.some(value => value !== '')) {
+        rows.push(row)
+      }
+
+      row = []
+      continue
+    }
+
+    cell += char
   }
+
+  // Última fila.
+  row.push(cell.trim())
+
+  if (row.some(value => value !== '')) {
+    rows.push(row)
+  }
+
+  return rows
+}
+
+function escapeMarkdownCell(value) {
+  const text = String(value ?? '').trim()
+
+  let result = ''
+  let backslashCount = 0
+
+  for (const char of text) {
+    if (char === '\\') {
+      result += char
+      backslashCount += 1
+      continue
+    }
+
+    if (char === '|') {
+      // Si ya existe un número impar de backslashes,
+      // el pipe ya está escapado.
+      if (backslashCount % 2 === 0) {
+        result += '\\|'
+      } else {
+        result += '|'
+      }
+
+      backslashCount = 0
+      continue
+    }
+
+    result += char
+    backslashCount = 0
+  }
+
+  // Markdown tables no soportan saltos de línea reales dentro de una celda.
+  return result.replace(/\r?\n/g, '<br>')
+}
+
+export function rowsToMarkdown(rows, align = 'left') {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return ''
+  }
+
+  const colCount = Math.max(
+    1,
+    ...rows.map(row => Array.isArray(row) ? row.length : 0)
+  )
+
+  const normalizedRows = rows.map(row => {
+    const normalized = Array.isArray(row) ? [...row] : [row]
+
+    while (normalized.length < colCount) {
+      normalized.push('')
+    }
+
+    return normalized.slice(0, colCount)
+  })
+
+  const alignMap = {
+    left: '---',
+    center: ':---:',
+    right: '---:'
+  }
+
+  const separator = Array(colCount).fill(
+    alignMap[align] || alignMap.left
+  )
+
+  const lines = [
+    `| ${normalizedRows[0].map(escapeMarkdownCell).join(' | ')} |`,
+    `| ${separator.join(' | ')} |`
+  ]
+
+  for (let i = 1; i < normalizedRows.length; i += 1) {
+    lines.push(
+      `| ${normalizedRows[i].map(escapeMarkdownCell).join(' | ')} |`
+    )
+  }
+
   return lines.join('\n')
 }
 
-export function textToRows(input){
-  const lines = input.split('\n').map(l=>l.trim()).filter(Boolean)
-  if(!lines.length) return []
-  if(lines[0].includes(':') && lines.every(l=>l.includes(':'))){
-    const rows=[['Property','Value']]
-    lines.forEach(l=>{
-      const idx=l.indexOf(':')
-      rows.push([l.slice(0,idx).trim(), l.slice(idx+1).trim()])
+export function textToRows(input) {
+  const text = String(input ?? '').trim()
+
+  if (!text) return []
+
+  const lines = text
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean)
+
+  // Caso 1: formato Campo: Valor
+  const keyValueRows = lines
+    .map(line => {
+      const match = line.match(
+        /^[-*•]?\s*([^:]{1,80}):\s*(.+)$/
+      )
+
+      if (!match) return null
+
+      return [
+        match[1].trim(),
+        match[2].trim()
+      ]
     })
-    return rows
+    .filter(Boolean)
+
+  if (keyValueRows.length === lines.length) {
+    return [
+      ['Field', 'Value'],
+      ...keyValueRows
+    ]
   }
-  const byComma = lines.map(l=>l.split(',').map(s=>s.trim()).filter(Boolean))
-  const sameLen = byComma.every(r=>r.length===byComma[0].length) && byComma[0].length>1
-  if(sameLen) return byComma
-  const byPipe = lines.map(l=>l.split('|').map(s=>s.trim()).filter(Boolean))
-  const samePipe = byPipe.every(r=>r.length===byPipe[0].length) && byPipe[0].length>1
-  if(samePipe) return byPipe
-  if(lines.length===1){
-    return [['Item'],...lines[0].split(/[,\n]+/).map(s=>[s.trim()]).filter(r=>r[0])]
+
+  // Quitamos bullets y numeración antes de intentar detectar columnas.
+  const cleanLines = lines.map(line =>
+    line
+      .replace(/^\s*(?:[-*•]|\d+[.)])\s+/, '')
+      .trim()
+  )
+
+  // Caso 2: datos estructurados.
+  // Probamos delimitadores comunes.
+  const delimiters = [',', '|', '\t', ';']
+
+  for (const delimiter of delimiters) {
+    const rows = cleanLines.map(line =>
+      line.split(delimiter).map(cell => cell.trim())
+    )
+
+    const width = rows[0]?.length || 0
+
+    if (
+      width > 1 &&
+      rows.every(row => row.length === width)
+    ) {
+      return rows
+    }
   }
-  const hasHeader = lines.length>2
-  if(hasHeader){
-    return [['Item','Value'],...lines.map(l=>[l])]
-  }
-  return lines.map(l=>[l])
+
+  // Caso 3: lista genérica.
+  return [
+    ['Item'],
+    ...cleanLines.map(item => [item])
+  ]
 }
 
-export function cleanMarkdownTable(md){
-  let t = md.trim()
-  t = t.replace(/\r/g,'')
-  const lines = t.split('\n').filter(l=>l.trim())
-  if(lines.length<2) return t
-  const cols = lines[0].split('|').filter(Boolean).length || 1
-  const out=[]
-  lines.forEach((line, i)=>{
-    if(!line.includes('|')){
-      if(i===0) return
-      const cells=line.split(/,|\t/).map(s=>s.trim())
-      if(cells.length===cols) out.push('| '+cells.join(' | ')+' |')
-      else out.push(line)
-      return
+function splitMarkdownRow(line) {
+  let value = line.trim()
+
+  // Soporta tablas con o sin pipe exterior.
+  if (value.startsWith('|')) {
+    value = value.slice(1)
+  }
+
+  if (
+    value.endsWith('|') &&
+    !value.endsWith('\\|')
+  ) {
+    value = value.slice(0, -1)
+  }
+
+  const cells = []
+  let cell = ''
+  let escaped = false
+
+  for (const char of value) {
+    if (escaped) {
+      cell += char
+      escaped = false
+      continue
     }
-    let l=line.trim()
-    if(!l.startsWith('|')) l='| '+l
-    if(!l.endsWith('|')) l=l+' |'
-    l=l.replace(/\|\s*\|/g,'| |').replace(/\s{2,}/g,' ')
-    out.push(l)
+
+    if (char === '\\') {
+      cell += char
+      escaped = true
+      continue
+    }
+
+    if (char === '|') {
+      cells.push(cell.trim())
+      cell = ''
+      continue
+    }
+
+    cell += char
+  }
+
+  cells.push(cell.trim())
+
+  return cells
+}
+
+function isMarkdownSeparator(row) {
+  return (
+    row.length > 0 &&
+    row.every(cell => /^:?-{3,}:?$/.test(cell.trim()))
+  )
+}
+
+function unescapeMarkdownCell(value) {
+  let result = ''
+  let escaped = false
+
+  for (const char of value) {
+    if (escaped) {
+      if (char === '|') {
+        result += '|'
+      } else {
+        result += '\\' + char
+      }
+
+      escaped = false
+      continue
+    }
+
+    if (char === '\\') {
+      escaped = true
+      continue
+    }
+
+    result += char
+  }
+
+  if (escaped) {
+    result += '\\'
+  }
+
+  return result
+}
+
+export function markdownToRows(md) {
+  const lines = String(md ?? '')
+    .replace(/\r/g, '')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean)
+
+  // Nos quedamos con líneas que realmente pueden ser filas.
+  const tableLines = lines.filter(line => line.includes('|'))
+
+  if (tableLines.length === 0) {
+    return []
+  }
+
+  const parsedRows = tableLines.map(splitMarkdownRow)
+
+  // Eliminamos la fila de separación Markdown.
+  const rows = parsedRows.filter(
+    row => !isMarkdownSeparator(row)
+  )
+
+  if (rows.length === 0) {
+    return []
+  }
+
+  const columnCount = Math.max(
+    1,
+    ...rows.map(row => row.length)
+  )
+
+  return rows.map(row => {
+    const normalized = row.map(cell =>
+      unescapeMarkdownCell(cell)
+    )
+
+    while (normalized.length < columnCount) {
+      normalized.push('')
+    }
+
+    return normalized.slice(0, columnCount)
   })
-  const firstData = out[0]||''
-  const colCount = firstData.split('|').filter(Boolean).length
-  if(out.length>=2 &&!out[1].includes('--')){
-    out.splice(1,0,'| '+Array(colCount).fill('---').join(' | ')+' |')
-  }
-  return out.join('\n')
 }
 
-export function markdownToCsv(md){
-  const lines = md.split('\n').filter(l=>l.trim().includes('|'))
-  const rows = lines.filter((_,i)=>{
-    if(i===1 && lines[1].includes('---')) return false
-    return true
-  }).map(l=>l.split('|').filter(Boolean).map(c=>c.trim().replace(/\\\|/g,'|')))
-  return rows.map(r=>r.map(v=>{
-    const needsQuote = v.includes(',') || v.includes('"') || v.includes('\n')
-    if(needsQuote) return `"${v.replace(/"/g,'""')}"`
-    return v
-  }).join(',')).join('\n')
-    }
+export function markdownToCsv(md) {
+  const rows = markdownToRows(md)
+
+  return rows
+    .map(row =>
+      row
+        .map(cell => {
+          const value = String(cell ?? '')
+
+          const needsQuotes =
+            value.includes(',') ||
+            value.includes('"') ||
+            value.includes('\n') ||
+            value.includes('\r')
+
+          if (needsQuotes) {
+            return `"${value.replace(/"/g, '""')}"`
+          }
+
+          return value
+        })
+        .join(',')
+    )
+    .join('\n')
+}
+
+export function cleanMarkdownTable(md) {
+  const rows = markdownToRows(md)
+
+  if (rows.length === 0) {
+    return String(md ?? '').trim()
+  }
+
+  return rowsToMarkdown(rows)
+}
 
 export const parseCSV = csvToRows
 export const markdownTableToCSV = markdownToCsv
