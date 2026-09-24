@@ -1,0 +1,21 @@
+{
+  "name": "Markdown AI Tools",
+  "short_name": "MD AI Tools",
+  "description": "Convert text, CSV and lists to perfect markdown tables for AI, Notion & GitHub",
+  "icons": [
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#FAF6F1",
+  "background_color": "#FAF6F1",
+  "display": "standalone",
+  "start_url": "/"
+}
