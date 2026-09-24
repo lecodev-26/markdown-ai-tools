@@ -98,7 +98,7 @@ test('converts rows to markdown and escapes pipes', () => {
   )
 })
 
-test('normalizes inconsistent row lengths in markdown output', () => {
+test('normalizes inconsistent row lengths without losing data', () => {
   const rows = [
     ['Name', 'Age', 'City'],
     ['John', '28'],
@@ -107,10 +107,10 @@ test('normalizes inconsistent row lengths in markdown output', () => {
 
   assert.equal(
     rowsToMarkdown(rows),
-    `| Name | Age | City |
-| --- | --- | --- |
-| John | 28 |  |
-| Jane | 26 | Madrid |`
+    `| Name | Age | City |  |
+| --- | --- | --- | --- |
+| John | 28 |  |  |
+| Jane | 26 | Madrid | Extra |`
   )
 })
 
