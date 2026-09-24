@@ -10,13 +10,18 @@ import TableToCsv from './pages/TableToCsv.jsx'
 import MarkdownCleaner from './pages/MarkdownCleaner.jsx'
 import Privacy from './pages/Privacy.jsx'
 import Terms from './pages/Terms.jsx'
-import CookieBanner from './components/CookieBanner.jsx'
 
-export default function App(){
+export default function App() {
   return (
     <>
       <Header />
-      <main style={{minHeight:'80vh', padding:'32px 0 64px'}}>
+
+      <main
+        style={{
+          minHeight: '80vh',
+          padding: '32px 0 64px'
+        }}
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/text-to-table" element={<TextToTable />} />
@@ -28,8 +33,8 @@ export default function App(){
           <Route path="/terms" element={<Terms />} />
         </Routes>
       </main>
+
       <Footer />
-      <CookieBanner />
     </>
   )
 }
