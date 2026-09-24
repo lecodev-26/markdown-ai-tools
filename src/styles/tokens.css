@@ -1,0 +1,18 @@
+:root{
+  --bg:#FAF6F1;
+  --bg-soft:#F2EEE8;
+  --bg-card:#FFFFFF;
+  --ink:#121212;
+  --ink-soft:#5A5A5A;
+  --ink-faint:#9A9A9A;
+  --line:#E8E2D9;
+  --line-strong:#121212;
+  --accent:#121212;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 10px 40px rgba(18,18,18,0.06);
+  --max:1120px;
+  --font-display:"Fraunces", serif;
+  --font-sans:"Instrument Sans", system-ui, -apple-system, sans-serif;
+  --font-mono:ui-monospace, SFMono-Regular, Menlo, monospace;
+}
