@@ -1,36 +1,40 @@
 import React, { useCallback } from 'react'
 import ToolLayout from '../components/ToolLayout.jsx'
 import Converter from '../components/Converter.jsx'
-import AdSlot from '../components/AdSlot.jsx'
-import { markdownToCsv } from '../utils/parsers.js'
+import { rowsToMarkdown, textToRows } from '../utils/parsers.js'
 
-export default function TableToCsv() {
+export default function TextToTable() {
   const convert = useCallback((input) => {
     if (!input.trim()) {
-      return 'CSV will appear here...'
+      return 'Your markdown table will appear here...'
     }
 
-    return markdownToCsv(input)
+    const rows = textToRows(input)
+
+    return rowsToMarkdown(rows)
   }, [])
 
   return (
     <ToolLayout
-      badge="Markdown → CSV"
-      title="Markdown Table to CSV Converter"
-      description="Paste a markdown table from GitHub, Notion or ChatGPT and get clean CSV for Excel & Google Sheets."
+      badge="Text → Markdown"
+      title="Text to Markdown Table Converter"
+      description="Turn messy notes, lists, key-value data and simple structured text into a clean Markdown table."
     >
       <Converter
-        inputLabel="Markdown table"
-        outputLabel="CSV output"
-        placeholder={`| Name | Age | City |
-| --- | --- | --- |
-| Manuel | 28 | Barcelona |
-| Marta | 26 | Madrid |`}
-        convertFn={convert}
-        downloadExt="csv"
-      />
+        inputLabel="Messy text"
+        outputLabel="Markdown table"
+        placeholder={`Project: Markdown AI Tools
+Location: Barcelona
+Status: In development
+Features: CSV, Markdown, Text conversion
 
-      <AdSlot />
+Or paste structured data:
+
+Name,Age,City
+Manuel,28,Barcelona
+Marta,26,Madrid`}
+        convertFn={convert}
+      />
     </ToolLayout>
   )
 }
